@@ -25,15 +25,13 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS)
 
 //Variables for secure login:
 #define Password_Length 8
-int signalPin = 12;
 char Data[Password_Length];
 char Master[Password_Length] = "123A456";
 byte data_count = 0, master_count = 0;
-bool Pass_is_good;
 char customKey;
+char choice;
 
-void setup()
-{
+void setup()  {
   delay(1000);
   lcd.begin(16, 2);
   lcd.print("    WELCOME TO ");
@@ -61,27 +59,17 @@ void setup()
     lcd.setCursor(0, 1);
     lcd.print("Check Connections");
   }
-  Authenticate();
+  authenticate();
 }
 
-void Authenticate()
-{
+void authenticate() {
   while (1)
   {
     lcd.setCursor(0, 0);
     lcd.print("Enter Password:");
-
-    customKey = customKeypad.getKey();
-    if (customKey) {
-      Data[data_count] = customKey;
-      lcd.setCursor(data_count, 1);
-      lcd.print(Data[data_count]);
-      data_count++;
-    }
-
+    readKey(8);
     if (data_count == Password_Length - 1) {
       lcd.clear();
-
       if (!strcmp(Data, Master)) {
         lcd.print("Correct");
         delay(5000);
@@ -94,28 +82,61 @@ void Authenticate()
       lcd.clear();
       clearData();
     }
+    clearData();
   }
   return;
 }
 
-void clearData(){
-  while(data_count !=0){
-    Data[data_count--] = 0; 
+void clearData()  {
+  while (data_count != 0) {
+    Data[data_count--] = 0;
   }
   return;
 }
 
-void loop()
-{
+void readKey(int n)  {
+  int i;
+  for (i = 0; i < n; i++)
+  {
+    customKey = customKeypad.getKey();
+    if (customKey) {
+      Data[data_count] = customKey;
+      lcd.setCursor(data_count, 1);
+      lcd.print(Data[data_count]);
+      data_count++;
+    }
+  }
+}
+
+void loop() {
   lcd.setCursor(0, 0);
-  lcd.print("1-ENR   2-DEL/OK");
+  lcd.print("A-ENROLL    B-DELETE");
   lcd.setCursor(0, 1);
-  lcd.print("3-UP/MTCH 4-DOWN");
-  //digitalWrite(closeLight, HIGH);
-  //lcd.print(t_count);
+  lcd.print("C-MATCH    D-HOME");
+  checkKeys();
+  delay(2000);
+}
 
-  //Enroll
-  if (digitalRead(up) == 0)
+void checkKeys()  {
+  choice = customKeypad.getKey();
+  switch (choice)
+  {
+    case 'A':
+      enroll();
+      break;
+    case 'B':
+      delet();
+      break;
+    case 'C':
+      match();
+      break;
+    default:
+      return;
+  }
+}
+
+void match()  {
+  while (1)
   {
     lcd.clear();
     uint8_t t_count = finger.getTemplateCount();
@@ -128,8 +149,6 @@ void loop()
       lcd.clear();
       lcd.print("Place Finger");
       delay(3000);
-      if (digitalRead(enroll) == 0) // To go back to start menu.
-        break;
       int result = getFingerprintIDez();
       if (result <= 0) // This solves the problem of auto-incrementing 'i' when "Finger Not Found!" is encountered.
         t_count += 1; //
@@ -151,154 +170,46 @@ void loop()
         lcd.clear();
       }
     }
-    //return;
-  }
-  checkKeys();
-  delay(2000);
-}
-
-void checkKeys()
-{
-  if (digitalRead(enroll) == 0 && digitalRead(del) == 0 && digitalRead(down) == 0)
-  {
-    lcd.clear();
-    lcd.print("Please Wait");
-    delay(2000);
-    while (digitalRead(enroll) == 0);
-    Enroll();
-  }
-
-  else if (digitalRead(del) == 0)
-  {
-    lcd.clear();
-    lcd.print("Please Wait");
-    delay(2000);
-    delet();
-  }
-}
-
-
-void Enroll()
-{
-  lcd.clear();
-  int set_count = 0;
-  lcd.print("How Many?");
-  //lcd.clear();
-  delay(3000);
-  while (1)
-  {
-    //delay(500);
-    if (digitalRead(up) == 0)
-    {
-      set_count += 10;
-      lcd.setCursor(0, 0);
-      lcd.print("Set Count:");
-      lcd.print(set_count);
-    }
-
-    else if (digitalRead(down) == 0)
-    {
-      set_count -= 1;
-      lcd.setCursor(0, 0);
-      lcd.print("Set Count:");
-      lcd.print(set_count);
-    }
-
-    else if (digitalRead(del) == 0)
-    {
-      lcd.clear();
-      break;
-    }
-  }
-
-  for (int i = 0; i < set_count; i++)
-  {
-    int count = 1;
-    lcd.clear();
-    lcd.print("Enroll Finger...");
-    lcd.setCursor(0, 1);
-    lcd.print("Set ID:");
+    lcd.print("Press A to continue, D to go to Home screen.");
     delay(3000);
-    while (1)
+    lcd.clear();
+    choice = customKeypad.getKey();
+    switch (choice)
     {
-      lcd.setCursor(9, 1);
-      //if(count==0)
-      // lcd.print(1);
-      //else
-      lcd.print(count);
-      if (digitalRead(up) == 0)
-      {
-        count++;
-        if (count > 100)
-          count = 1;
-        delay(500);
-      }
-
-      else if (digitalRead(down) == 0)
-      {
-        count--;
-        if (count < 1)
-          count = 100;
-        delay(500);
-      }
-
-      else if (digitalRead(del) == 0)
-      {
-        id = count;
-        getFingerprintEnroll();
-        break;
-      }
-
-      else if (digitalRead(enroll) == 0)
-      {
+      case 'A':
+        continue;
+      default:
         return;
-      }
     }
   }
+  return;
 }
 
-void delet()
-{
-  int count = 1;
+void enroll() {
   lcd.clear();
-  lcd.print("Delete Finger    ");
+  lcd.print("Enroll Finger...");
   lcd.setCursor(0, 1);
   lcd.print("Set ID:");
-  while (1)
-  {
-    lcd.setCursor(9, 1);
-    lcd.print(count);
-    if (digitalRead(up) == 0)
-    {
-      count++;
-      if (count > 100)
-        count = 0;
-      delay(500);
-    }
-
-    else if (digitalRead(down) == 0)
-    {
-      count--;
-      if (count < 0)
-        count = 100;
-      delay(500);
-    }
-    else if (digitalRead(del) == 0)
-    {
-      id = count;
-      deleteFingerprint(id);
-      return;
-    }
-
-    else if (digitalRead(enroll) == 0)
-    {
-      return;
-    }
-  }
+  delay(3000);
+  readKey(4);
+  id = Data;
+  clearData();
+  getFingerprintEnroll();
+  return;
 }
 
-uint8_t getFingerprintEnroll()
-{
+void delet()  {
+  lcd.clear();
+  lcd.print("Delete Finger Print.");
+  lcd.setCursor(0, 1);
+  readKey(4);
+  id = Data;
+  clearData();
+  deleteFingerprint(id);
+  return;
+}
+
+uint8_t getFingerprintEnroll()  {
   int p = -1;
   lcd.clear();
   lcd.print("Finger ID:");
@@ -528,8 +439,7 @@ int getFingerprintIDez()
   return finger.fingerID;
 }
 
-uint8_t deleteFingerprint(uint8_t id)
-{
+uint8_t deleteFingerprint(uint8_t id) {
   uint8_t p = -1;
   lcd.clear();
   lcd.print("Please wait");
@@ -553,5 +463,3 @@ uint8_t deleteFingerprint(uint8_t id)
     return p;
   }
 }
-
-
