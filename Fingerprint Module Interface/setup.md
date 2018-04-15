@@ -9,5 +9,3 @@ PROCEDURE:
 -Add the LCD library from the IDE.
 -Connect the hardware created to computer.
 -Run the code.
- 
-
