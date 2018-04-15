@@ -7,5 +7,6 @@ PROCEDURE:
 -Open the .ino file using Arduino software.
 -Add the Keypad library from the IDE (http://playground.arduino.cc/Code/Keypad#Download).
 -Add the LCD library from the IDE.
+-Configure the pin numbers as needed.
 -Connect the hardware created to computer.
 -Run the code.
